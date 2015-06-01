@@ -46,11 +46,10 @@ pub = []
 for x in range(0,3):
     pub.append(pubkey1)
 
-print 'len(pub)'
-print '    ' + repr(len(pub))
+print 'len(privkey1 = %d), len(pubkey1 = %d)' % (len(privkey1), len(pubkey1))
 print ' ' 
 
-# 
+# create the redemption script and its address 
 script = bitcoin.mk_multisig_script(pub[0], pub[1], pub[2], 2, 3)
 address = bitcoin.scriptaddr(script)
 
@@ -74,6 +73,10 @@ if script == script1:
     print '* the two scripts are the same *'
 else:
     print '* the two scripts are different *'
+if address == address1:
+    print '* the two addresses are the same *'
+else:
+    print '* the two addresses are different *'
 print ' ' 
 
 # figure out how much bitcoin is available at this address
