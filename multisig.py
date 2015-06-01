@@ -42,9 +42,7 @@ print '    ' + repr(pubkey3)
 print ' '
 
 # Make a list of the public keys
-pub = []
-for x in range(0,3):
-    pub.append(pubkey1)
+pub = [pubkey1, pubkey2, pubkey3]
 
 print 'len(privkey1 = %d), len(pubkey1 = %d)' % (len(privkey1), len(pubkey1))
 print ' ' 
@@ -59,12 +57,12 @@ print '(script) address'
 print '    ' + address
 
 # just for kicks, see if the order of the keys matter when generating
-# a script address; as far as I can tell, order does not matter
+# a script address; as far as I can tell the order does matter
 script1 = bitcoin.mk_multisig_script(pub[2], pub[0], pub[1], 2, 3)
-address1 = bitcoin.scriptaddr(script)
-print 'script2'
+address1 = bitcoin.scriptaddr(script1)
+print 'script1'
 print '    ' + script1
-print 'address1'
+print '(script1) address1'
 print '    ' + address1
 print ' '
 
@@ -78,6 +76,9 @@ if address == address1:
 else:
     print '* the two addresses are different *'
 print ' ' 
+
+# print 79 character separator
+print '-' * 79
 
 # figure out how much bitcoin is available at this address
 history = bitcoin.unspent(fromAddress)
@@ -139,7 +140,7 @@ print '    ' + repr(neededFee)
 
 
 # create the raw transaction using our private key (I'll assume that our
-# private key is privkey1
+# private key is privkey1)
 # Of course in a real application such code would never be put on a publicly
 # available code repository.  ;)
 myPrivKey = privkey1
