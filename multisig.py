@@ -4,7 +4,7 @@ import pybitcointools as bitcoin
 
 # send BTC here!
 fromAddress = '1AG6FXCHJSdtZtvsfwZYo6dVzGNV9gzDqG'
-toAddress = fromAddress
+changeAddress = fromAddress
 amount = int(0.0001 * 100000000)
 fee = 0.0
 
@@ -84,6 +84,7 @@ else:
     print '* the two addresses are different *'
 print ' ' 
 
+# ----------------------------------------------------------------------------
 # print 79 character separator
 print '-' * 79
 
@@ -103,7 +104,10 @@ print 'total'
 print '    ' + repr(total)
 print ' '
 
-# calculate the amount to send to the new (multisig) address
+# calculate the amount to send to the new (multisig) address.  Create a list
+# of inputs that we will draw upon to send the coins.  This list will
+# presumably be smaller than the whole set of transactons we got above to
+# calculate the balance at this address.
 totalSend = amount + fee
 currentValue = 0.0
 inputs = []
@@ -121,22 +125,22 @@ print 'currentValue'
 print '    ' + repr(currentValue)
 print ' '
 
-# calculate an appropriate mining fee based upon the length of
-# the transaction inputs
+# calculate an appropriate mining fee based upon the number of inputs
+# used for the transaction
 inputLen = len(inputs)
-neededFee = int(0.001 * 0) # int(.001 * 100000000)
+miningFee = int(0.001 * 0) # int(.001 * 100000000)
 transSize = inputLen * 400 + 34 * 2 + 10
 if transSize > 10000:
     while transSize > 1000:
-        neededFee += 0 # int(0.0001 * 100000000)
+        miningFee += 0 # int(0.0001 * 100000000)
         transSize -= 1000
 
 print 'inputLen'
 print '    ' + repr(inputLen)
 print 'transSize'
 print '    ' + repr(transSize)
-print 'neededFee'
-print '    ' + repr(neededFee)
+print 'miningFee'
+print '    ' + repr(miningFee)
 
 
 # ----------------------------------------------------------------------------
@@ -152,7 +156,11 @@ print '    ' + repr(neededFee)
 # available code repository.  ;)
 myPrivKey = privkey1
 
-rawTX = bitcoin.mksend(inputs, [toAddress+':'+str(amount)], fromAddress, neededFee)
+# inputs: collection of UTXO from the fromAddress
+# changeAddress 
+# amount: amount to send in satoshi
+# miningFee is the mining fee
+rawTX = bitcoin.mksend(inputs, [address+':'+str(amount)], changeAddress, miningFee)
 
 # create a signature for each input
 mySig = []
@@ -162,7 +170,7 @@ for x in range(0, inputLen):
 
 print 'rawTX'
 print '    ' + rawTX
-print 'mySig[]'
+print 'mySig[], list of rawTX signed with myPrivKey'
 print '    ' + repr(mySig)
 print ' '
 
@@ -184,8 +192,12 @@ for x in range(0, inputLen):
     otherSig.append(sig)
 
 # now finish the signing with a second key holder
+fullySignedTx = rawTX
 for x in range(0,inputLen):
-    fullySignedTx = bitcoin.apply_multisignatures(rawTX, x, script, mySig[x], otherSig[x])
+    fullySignedTx = bitcoin.apply_multisignatures(fullySignedTx, x, script, mySig[x], otherSig[x])
+
+print 'fullySignedTx'
+print '    ' + repr(fullySignedTx)
 
 answer = raw_input("Do you want to send this transaction (Y/N)? ")
 if answer in 'yY':
@@ -194,7 +206,7 @@ if answer in 'yY':
     print 'Not implemented'
     pass
 else:
-    print 'Your transactons was not broadcast'
+    print 'Your transacton was not broadcast'
     sys.exit(0)
 
 
