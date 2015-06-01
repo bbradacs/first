@@ -2,7 +2,7 @@ import sys
 import pybitcointools as bitcoin
 
 # send BTC here!
-fromAddress = '123456y7'
+fromAddress = '1AG6FXCHJSdtZtvsfwZYo6dVzGNV9gzDqG'
 amount = 0.1
 fee = 0.0
 
