@@ -3,7 +3,8 @@ import pybitcointools as bitcoin
 
 # send BTC here!
 fromAddress = '1AG6FXCHJSdtZtvsfwZYo6dVzGNV9gzDqG'
-amount = 0.01
+toAddress = fromAddress
+amount = int(0.0001 * 100000000)
 fee = 0.0
 
 # In our case MultiSig works with three parties.  Each party keeps
@@ -11,9 +12,14 @@ fee = 0.0
 # for each of the three private keys -- these public keys
 # *are* shared between the the parties.  This way each member of
 # the party can recreate the same script.
-privkey1 = bitcoin.random_key()
-privkey2 = bitcoin.random_key()
-privkey3 = bitcoin.random_key()
+# privkey1 = bitcoin.random_key()
+# privkey2 = bitcoin.random_key()
+# privkey3 = bitcoin.random_key()
+
+# use previously defined private keys
+privkey1 = 'eeaef3180e49e1910e7fb5aff6047d04c2d29aa26c84686be82fd2fbb58f22c9'
+privkey2 = '17b10bb69ee84975776fe3b9af8ee6fed3709484afdb915eca6d5a1968352b8c'
+privkey3 = '897c738ca8aa4dca96a68926b1877bdbcc8e198eac85d26f3fc6f8c4b1673974'
 
 pubkey1 = bitcoin.privtopub(privkey1)
 pubkey2 = bitcoin.privtopub(privkey2)
@@ -107,7 +113,7 @@ print ' '
 # calculate an appropriate mining fee based upon the length of
 # the transaction inputs
 inputLen = len(inputs)
-neededFee = 0 # int(.001 * 100000000)
+neededFee = int(0.001 * 0) # int(.001 * 100000000)
 transSize = inputLen * 400 + 34 * 2 + 10
 if transSize > 10000:
     while transSize > 1000:
@@ -124,4 +130,29 @@ print '    ' + repr(neededFee)
 
 # ----------------------------------------------------------------------------
 # The is where the real work starts
+# At this point we have all of our inputs ready for the transaction.
 # ----------------------------------------------------------------------------
+
+
+
+# create the raw transaction using our private key (I'll assume that our
+# private key is privkey1
+# Of course in a real application such code would never be put on a publicly
+# available code repository.  ;)
+myPrivKey = privkey1
+
+rawTX = bitcoin.mksend(inputs, [toAddress+':'+str(amount)], fromAddress, neededFee)
+
+mySig = []
+for x in range(0, inputLen):
+    sig = bitcoin.multisign(rawTX, x, script, myPrivKey)
+    mySig.append(sig)
+
+print 'rawTX'
+print '    ' + rawTX
+print 'mySig[]'
+print '    ' + repr(mySig)
+print ' '
+
+
+
