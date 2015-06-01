@@ -1,4 +1,5 @@
 import sys
+import getpass
 import pybitcointools as bitcoin
 
 # send BTC here!
@@ -21,10 +22,15 @@ privkey1 = 'eeaef3180e49e1910e7fb5aff6047d04c2d29aa26c84686be82fd2fbb58f22c9'
 privkey2 = '17b10bb69ee84975776fe3b9af8ee6fed3709484afdb915eca6d5a1968352b8c'
 privkey3 = '897c738ca8aa4dca96a68926b1877bdbcc8e198eac85d26f3fc6f8c4b1673974'
 
+pwd = getpass.getpass('Password: ')
+privkey = bitcoin.sha256(pwd)
+
 pubkey1 = bitcoin.privtopub(privkey1)
 pubkey2 = bitcoin.privtopub(privkey2)
 pubkey3 = bitcoin.privtopub(privkey3)
 
+print 'privkey'
+print '    ' + repr(privkey)
 print 'privkey1'
 print '    ' + repr(privkey1)
 print 'privkey2'
@@ -45,6 +51,7 @@ print ' '
 pub = [pubkey1, pubkey2, pubkey3]
 
 print 'len(privkey1 = %d), len(pubkey1 = %d)' % (len(privkey1), len(pubkey1))
+print 'len(privkey) = %d)' % len(privkey)
 print ' ' 
 
 # create the redemption script and its address 
