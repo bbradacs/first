@@ -143,6 +143,7 @@ myPrivKey = privkey1
 
 rawTX = bitcoin.mksend(inputs, [toAddress+':'+str(amount)], fromAddress, neededFee)
 
+# create a signature for each input
 mySig = []
 for x in range(0, inputLen):
     sig = bitcoin.multisign(rawTX, x, script, myPrivKey)
@@ -155,4 +156,37 @@ print '    ' + repr(mySig)
 print ' '
 
 
+# now we need the following data for the next step of the multisig process
+# rawTX: The original raw transaction
+# script: The redemption script
+# mySig[]: The signature for each input
+
+# assume the other key is privkey2
+otherPrivKey = privkey2
+
+otherSig = []
+for x in range(0, inputLen):
+    sig = bitcoin.multisign(rawTX, x, script, otherPrivKey)
+    if mySig[x] == sig:
+        print " You already signed this. Send it to another key holder."
+        sys.exit(0)
+    otherSig.append(sig)
+
+# now finish the signing with a second key holder
+for x in range(0,inputLen):
+    fullySignedTx = bitcoin.apply_multisignatures(rawTX, x, script, mySig[x], otherSig[x])
+
+answer = raw_input("Do you want to send this transaction (Y/N)? ")
+if answer in 'yY':
+    # Don't actually do it until we understand what we're doing
+    # bitcoind.eligius_pushtx(fullySignedTx)
+    print 'Not implemented'
+    pass
+else:
+    print 'Your transactons was not broadcast'
+    sys.exit(0)
+
+
+
+# the end.
 
