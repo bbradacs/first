@@ -65,21 +65,28 @@ print ' '
 
 # are they equal?
 if script == script1:
-    print 'the two scripts are the same'
+    print '* the two scripts are the same *'
 else:
-    print ' the two scripts are different'
-
+    print '* the two scripts are different *'
 print ' ' 
 
 # figure out how much bitcoin is available at this address
 history = bitcoin.unspent(fromAddress)
-total = bitcoin.sum(bitcoin.multiaccess(history, 'value'))
+outputs = bitcoin.multiaccess(history, 'output')
+values = bitcoin.multiaccess(history, 'value')
+total = bitcoin.sum(values)
 
 print 'history'
 print '    ' + repr(history)
+print 'outputs'
+print '    ' + repr(outputs)
+print 'values'
+print '    ' + repr(values)
 print 'total'
 print '    ' + repr(total)
+print ' '
 
+# calculate the amount to send to the new (multisig) address
 totalSend = amount + fee
 currentValue = 0.0
 inputs = []
@@ -89,9 +96,18 @@ for trans in history:
     if currentValue >= totalSend:
         break 
 
+print 'totalSend'
+print '    ' + repr(totalSend)
+print 'currentValue'
+print '    ' + repr(currentValue)
+print ' '
+
+# calculate an appropriate mining fee based upon the length of
+# the transaction inputs
 inputLen = len(inputs)
 transSize = inputLen * 400 + 34 * 2 + 10
 if transSize > 10000:
     neededFee = 0.0
     transSize -= 1000
+
 
