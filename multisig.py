@@ -96,6 +96,8 @@ for trans in history:
     if currentValue >= totalSend:
         break 
 
+print 'inputs'
+print '    ' + repr(inputs)
 print 'totalSend'
 print '    ' + repr(totalSend)
 print 'currentValue'
@@ -105,9 +107,21 @@ print ' '
 # calculate an appropriate mining fee based upon the length of
 # the transaction inputs
 inputLen = len(inputs)
+neededFee = 0 # int(.001 * 100000000)
 transSize = inputLen * 400 + 34 * 2 + 10
 if transSize > 10000:
-    neededFee = 0.0
-    transSize -= 1000
+    while transSize > 1000:
+        neededFee += 0 # int(0.0001 * 100000000)
+        transSize -= 1000
+
+print 'inputLen'
+print '    ' + repr(inputLen)
+print 'transSize'
+print '    ' + repr(transSize)
+print 'neededFee'
+print '    ' + repr(neededFee)
 
 
+# ----------------------------------------------------------------------------
+# The is where the real work starts
+# ----------------------------------------------------------------------------
