@@ -160,23 +160,23 @@ myPrivKey = privkey1
 # changeAddress 
 # amount: amount to send in satoshi
 # miningFee is the mining fee
-rawTX = bitcoin.mksend(inputs, [address+':'+str(amount)], changeAddress, miningFee)
+rawTx = bitcoin.mksend(inputs, [address+':'+str(amount)], changeAddress, miningFee)
 
 # create a signature for each input
 mySig = []
 for x in range(0, inputLen):
-    sig = bitcoin.multisign(rawTX, x, script, myPrivKey)
+    sig = bitcoin.multisign(rawTx, x, script, myPrivKey)
     mySig.append(sig)
 
-print 'rawTX'
-print '    ' + rawTX
-print 'mySig[], list of rawTX signed with myPrivKey'
+print 'rawTx'
+print '    ' + rawTx
+print 'mySig[], list of rawTx signed with myPrivKey'
 print '    ' + repr(mySig)
 print ' '
 
 
 # now we need the following data for the next step of the multisig process
-# rawTX: The original raw transaction
+# rawTx: The original raw transaction
 # script: The redemption script
 # mySig[]: The signature for each input
 
@@ -185,19 +185,20 @@ otherPrivKey = privkey2
 
 otherSig = []
 for x in range(0, inputLen):
-    sig = bitcoin.multisign(rawTX, x, script, otherPrivKey)
+    sig = bitcoin.multisign(rawTx, x, script, otherPrivKey)
     if mySig[x] == sig:
         print " You already signed this. Send it to another key holder."
         sys.exit(0)
     otherSig.append(sig)
 
 # now finish the signing with a second key holder
-fullySignedTx = rawTX
+fullySignedTx = rawTx
 for x in range(0,inputLen):
     fullySignedTx = bitcoin.apply_multisignatures(fullySignedTx, x, script, mySig[x], otherSig[x])
 
 print 'fullySignedTx'
 print '    ' + repr(fullySignedTx)
+print ' '
 
 answer = raw_input("Do you want to send this transaction (Y/N)? ")
 if answer in 'yY':
