@@ -3,12 +3,14 @@
 
 from twisted.internet.defer import Deferred
 from twisted.internet import reactor
+from twisted.internet import task
 import twisted.internet.threads
 
 import threading
 
 class command_processor(object):
-    def __init__(self, evt_loop):
+
+    def __init__(self):
         # create an empty dictionary of events
         # will be populated by add_command()
         # each entry is a key,value pair where the
@@ -18,7 +20,8 @@ class command_processor(object):
         #
         # evt_loop is the (a?) reactor
         self._procs = {}
-        self._reactor = evt_loop
+        self._reactor = reactor
+        self._task = task 
         self._queue = []
         pass
 
@@ -47,9 +50,15 @@ class command_processor(object):
             self._procs[cmd] = [proc]
         return
 
+    def queue_command_thread(self, cmd, args):
+        self._queue.append([cmd,args])
+        d = twisted.internet.threads.deferToThread(self._on_event, args)
+        d.addCallback(self._on_event_results)
+        return
+
     def queue_command(self, cmd, args):
         self._queue.append([cmd,args])
-        d = twisted.internet.threads.deferToThread(self._on_event,args)
+        d = self._task.deferLater(self._reactor, 0.0, self._on_event, args)
         d.addCallback(self._on_event_results)
         return
 
@@ -68,7 +77,7 @@ class command_processor(object):
 
 
 # the sole command processor
-cp = command_processor(reactor)
+cp = command_processor()
 
 # our state machine
 # so sad it will never see the light of day :(
@@ -92,6 +101,7 @@ def cmd2_1(args):
         cp.stop()
     return;
 
+# start the main program here
 def main():
     cp.add_command('cmd1', cmd1_1)
     cp.add_command('cmd1', cmd1_2)
@@ -104,3 +114,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
