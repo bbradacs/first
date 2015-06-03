@@ -9,6 +9,7 @@ def thread_id():
 
 
 def long_op(*args, **kwargs):
+    print ' ' 
     print 'starting long_op ...'
     print '    thread id = ' + repr(thread_id())
     r = range(0,60)
