@@ -8,6 +8,11 @@ import twisted.internet.threads
 
 import threading
 
+# return name of the current thread
+def thread_id():
+    return threading.current_thread().name
+
+
 class command_processor(object):
 
     def __init__(self):
@@ -26,6 +31,8 @@ class command_processor(object):
         pass
 
     def _on_event(self, args):
+        print '_on_event'
+        print '    ' + thread_id()
         if len(self._queue) == 0:
             print '_on_event() there is nothing in the queue'
             return []
@@ -83,20 +90,23 @@ cp = command_processor()
 # so sad it will never see the light of day :(
 def cmd1_1(args):
     print 'cmd1_1' + '(' + repr(args) + ')'
+    print '    thread = ' + thread_id()
     cp.queue_command('cmd2', {'cat': 12, 'dog': 16})
     return
 
 def cmd1_2(args):
     print 'cmd1_2' + '(' + repr(args) + ')'
+    print '    thread = ' + thread_id()
     # cp.queue_command('cmd2', {'cat': 13, 'dog': 17})
     return
 
 def cmd2_1(args):
     print 'cmd2_1' + '(' + repr(args) + ')'
+    print '    thread = ' + thread_id()
     cat = args['cat']
     dog = args['dog']
     if cat > 0:
-        cp.queue_command('cmd2', {'cat': cat - 1, 'dog': dog})
+        cp.queue_command_thread('cmd2', {'cat': cat - 1, 'dog': dog})
     else:
         cp.stop()
     return;
