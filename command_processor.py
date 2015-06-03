@@ -27,7 +27,7 @@ class command_processor(object):
             print '_on_event() there is nothing in the queue'
             return []
         else:
-            cmd,self._queue = self._queue[0],self._queue[1::]
+            cmd,self._queue = self._queue[0],self._queue[1:]
             return cmd
 
     def _on_event_results(self, args):
