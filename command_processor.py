@@ -84,7 +84,12 @@ def cmd1_2(args):
 
 def cmd2_1(args):
     print 'cmd2_1' + '(' + repr(args) + ')'
-    cp.stop()
+    cat = args['cat']
+    dog = args['dog']
+    if cat > 0:
+        cp.queue_command('cmd2', {'cat': cat - 1, 'dog': dog})
+    else:
+        cp.stop()
     return;
 
 def main():
