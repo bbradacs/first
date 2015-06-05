@@ -4,7 +4,7 @@
 from twisted.internet.defer import Deferred
 from twisted.internet import reactor
 from twisted.internet import task
-import twisted.internet.threads
+from twisted.internet import threads
 
 import threading
 
@@ -37,6 +37,8 @@ class command_processor(object):
             print '_on_event() there is nothing in the queue'
             return []
         else:
+            # grab the first command off the queue, then
+            # remove the first element of the queue
             cmd,self._queue = self._queue[0],self._queue[1:]
             return cmd
 
@@ -59,7 +61,7 @@ class command_processor(object):
 
     def queue_command_thread(self, cmd, args):
         self._queue.append([cmd,args])
-        d = twisted.internet.threads.deferToThread(self._on_event, args)
+        d = threads.deferToThread(self._on_event, args)
         d.addCallback(self._on_event_results)
         return
 

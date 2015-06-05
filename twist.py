@@ -1,8 +1,49 @@
 from twisted.internet.defer import Deferred
 from twisted.internet import reactor
-import twisted.internet.threads
+from twisted.internet import threads
 
 import threading
+
+def run_this_later(args):
+    print 'run_this_later: ' + str
+    if str[0] == 'c':
+        return args
+    else:
+        raise Exception("didn't begin with the right char")
+    return 
+
+def test_proc(args):
+    d = threads.deferToThread(run_this_later, args)
+    return d    
+    
+
+# attempt_n() will attempt to execute the provided function n
+# times.  proc is a function that returns a deferred, args is the
+# argument of proc, and num_attempts is how many times you want
+# to attempt o call proc before giving up
+def attempt_n(proc, args, num_attempts = 1):
+
+    d = Deferred()
+    
+    def on_success(result):
+        d.callback(result) 
+        return
+
+    def on_failure(err, args, num_attempts):
+        if  num_attempts == 0:
+            d.errback(err)
+        else:
+            _d = proc(args)
+            _d.addCallback(on_success)
+            _d.addErrback(on_failure, args, num_attempts - 1)
+        return
+
+    _d = proc(args)
+    _d.addCallback(on_success)
+    _d.addErrback(on_failure, args, num_attempts)
+    
+    return d 
+    
 
 def thread_id():
     return threading.current_thread().name
@@ -75,12 +116,25 @@ def main():
     print '    thread_id = ' + repr(thread_id())
 
     # start with the initial state
-    reactor.callLater(0.0, state_1)
+#    reactor.callLater(0.0, state_1)
 
 #    print 'calling test2()'
 #    test2(0, {'cat': 1, 'dog': 2})
 
     # start the reactor
+
+    def s(args):
+        print 'success! ' + args
+        reactor.stop()
+        return
+
+    def f(err):
+        reactor.stop()
+        print 'fail! ' + repr(err) 
+
+    d = attempt_n(test_proc, 'dog', 3)
+    d.addCallbacks(s, f)
+
     reactor.run()
 
 if __name__ == '__main__':
