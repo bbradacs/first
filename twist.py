@@ -38,7 +38,7 @@ def test_proc(max_val):
 # times.  proc is a function that returns a deferred, args is the
 # argument of proc, and num_attempts is how many times you want
 # to attempt to call proc before giving up
-def attempt_n(proc, args, num_attempts):
+def attempt_n(num_attempts, proc, *args, **kwargs):
 
     d = Deferred()
     
@@ -46,18 +46,18 @@ def attempt_n(proc, args, num_attempts):
         d.callback(result) 
         return
 
-    def on_failure(err, args, num_attempts):
+    def on_failure(err, num_attempts):
         if  num_attempts == 0:
             d.errback(err)
         else:
-            _d = proc(args)
+            _d = proc(*args, **kwargs)
             _d.addCallback(on_success)
-            _d.addErrback(on_failure, args, num_attempts - 1)
+            _d.addErrback(on_failure, num_attempts - 1)
         return
 
-    _d = proc(args)
+    _d = proc(*args, **kwargs)
     _d.addCallback(on_success)
-    _d.addErrback(on_failure, args, num_attempts - 1)
+    _d.addErrback(on_failure, num_attempts - 1)
     
     return d 
 
@@ -123,6 +123,7 @@ def state_4():
     reactor.stop()
     return
 
+
 def main():
     print 'main'
     print '    thread_id = ' + repr(thread_id())
@@ -132,7 +133,9 @@ def main():
 #    reactor.callLater(0.0, state_1)
 
 #    print 'calling test2()'
-#    test2(0, {'cat': 1, 'dog': 2})
+    test2(0, {'cat': 1, 'dog': 2})
+    test2('cat')
+    test2('cat', 'dog')
 
     # start the reactor
 
@@ -146,7 +149,7 @@ def main():
         reactor.stop()
         return
 
-    d = attempt_n(test_proc, 10, 5)
+    d = attempt_n(5, test_proc, 10)
     d.addCallbacks(s, f)
 
     reactor.run()
