@@ -3,25 +3,42 @@ from twisted.internet import reactor
 from twisted.internet import threads
 
 import threading
+import random
 
-def run_this_later(args):
-    print 'run_this_later: ' + str
-    if str[0] == 'c':
-        return args
+# return represention of the current thread
+def thread_id():
+    return threading.current_thread().name
+
+# create a random number between 1 .. 100 inclusive for testing
+random.seed()
+def random_arg():
+    val = random.randint(1,100) 
+    return val
+
+# generate a random arg; if it is <= val then retrun the
+# number, otherwise raise an exception
+def run_this_later(max_val):
+    print 'run_this_later: ' + repr(max_val) 
+    print '    thread = ' + thread_id()
+    val = random_arg()
+    print '    val = ' + repr(val)
+    if val <= max_val:
+        return val
     else:
-        raise Exception("didn't begin with the right char")
+        raise Exception('did not get a value less than ' + repr(max_val))
     return 
 
-def test_proc(args):
-    d = threads.deferToThread(run_this_later, args)
+def test_proc(max_val):
+    print 'test_proc: ' + repr(max_val)
+    d = threads.deferToThread(run_this_later, max_val)
     return d    
     
 
 # attempt_n() will attempt to execute the provided function n
 # times.  proc is a function that returns a deferred, args is the
 # argument of proc, and num_attempts is how many times you want
-# to attempt o call proc before giving up
-def attempt_n(proc, args, num_attempts = 1):
+# to attempt to call proc before giving up
+def attempt_n(proc, args, num_attempts):
 
     d = Deferred()
     
@@ -40,14 +57,9 @@ def attempt_n(proc, args, num_attempts = 1):
 
     _d = proc(args)
     _d.addCallback(on_success)
-    _d.addErrback(on_failure, args, num_attempts)
+    _d.addErrback(on_failure, args, num_attempts - 1)
     
     return d 
-    
-
-def thread_id():
-    return threading.current_thread().name
-
 
 def long_op(*args, **kwargs):
     print ' ' 
@@ -114,6 +126,7 @@ def state_4():
 def main():
     print 'main'
     print '    thread_id = ' + repr(thread_id())
+    print ' '
 
     # start with the initial state
 #    reactor.callLater(0.0, state_1)
@@ -124,15 +137,16 @@ def main():
     # start the reactor
 
     def s(args):
-        print 'success! ' + args
+        print 'success! ' + repr(args)
         reactor.stop()
         return
 
     def f(err):
+        print 'fail! ' + str(err) 
         reactor.stop()
-        print 'fail! ' + repr(err) 
+        return
 
-    d = attempt_n(test_proc, 'dog', 3)
+    d = attempt_n(test_proc, 10, 5)
     d.addCallbacks(s, f)
 
     reactor.run()
