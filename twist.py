@@ -36,9 +36,13 @@ def test_proc(max_val):
 
 # attempt_n() will attempt to execute the provided function n
 # times.  proc is a function that returns a deferred, args is the
-# argument of proc, and num_attempts is how many times you want
-# to attempt to call proc before giving up
+# argument of proc, kwargs make up the keyword arguments of proc,
+# and num_attempts is how many times you want to attempt to call
+# proc before giving up
 def attempt_n(num_attempts, proc, *args, **kwargs):
+
+    # num_attempts must be at least one -- how to properly enforce
+    # this?  raise an exception?
 
     d = Deferred()
     
@@ -47,18 +51,22 @@ def attempt_n(num_attempts, proc, *args, **kwargs):
         return
 
     def on_failure(err, num_attempts):
-        if  num_attempts == 0:
+        if num_attempts < 1:
             d.errback(err)
         else:
+            # asynchronously call proc()
             _d = proc(*args, **kwargs)
             _d.addCallback(on_success)
             _d.addErrback(on_failure, num_attempts - 1)
         return
 
+    # asynchronously call proc() and wire up our callback / errback
+    # to the Deferred it returns
     _d = proc(*args, **kwargs)
     _d.addCallback(on_success)
     _d.addErrback(on_failure, num_attempts - 1)
-    
+   
+    # return the deferred we created to the caller 
     return d 
 
 def long_op(*args, **kwargs):
@@ -133,25 +141,31 @@ def main():
 #    reactor.callLater(0.0, state_1)
 
 #    print 'calling test2()'
-    test2(0, {'cat': 1, 'dog': 2})
-    test2('cat')
-    test2('cat', 'dog')
 
     # start the reactor
 
     def s(args):
         print 'success! ' + repr(args)
-        reactor.stop()
         return
 
     def f(err):
         print 'fail! ' + str(err) 
+        return
+
+    def stop(_):
+        print 'stop()'
         reactor.stop()
         return
 
+    print 'about to call attempt_n()'
     d = attempt_n(5, test_proc, 10)
+    print 'after calling attempt_n()'
+    print 'about to call addCallbacks()'
     d.addCallbacks(s, f)
+    d.addBoth(stop)
+    print 'after calling addCallbacks()'
 
+    print 'about to call reactor.run()'
     reactor.run()
 
 if __name__ == '__main__':
