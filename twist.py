@@ -168,6 +168,23 @@ def main():
     print 'about to call reactor.run()'
     reactor.run()
 
+    print 'the reactor has stopped, now play with Deferred'
+    print ' '
+
+    print 'creating a deferred'
+    d = Deferred()
+
+    print 'calling d.callback("foo")'
+    d.callback('foo')
+
+    print 'adding a callback'
+    def cb(result):
+        print 'result = ' + result
+    d.addCallback(cb)
+    d.addCallback(lambda res: print res)
+
+    print 'after d.addCallback()'
+
 if __name__ == '__main__':
     main()
 
