@@ -5,6 +5,7 @@ import functools
 class A(object):
     # avoid using a dictionary to store member variables
     # curiously in this case the slots version takes up more space
+    # Also read that __slots__ breaks pickle and other reflction gizmos
     #__slots__ = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 
     def __init__(self, a):
@@ -78,7 +79,9 @@ def main():
     print 'a1 >= a2 = %r' % (a1 >= a2)
 
     b1 = eval(repr(a1))
+    b2 = eval(repr(a2))
     print 'b1.a = %s' % b1.a
+    print 'b2.a = %s' % b2.a
 
     return
 
