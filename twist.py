@@ -181,9 +181,19 @@ def main():
     def cb(result):
         print 'result = ' + result
     d.addCallback(cb)
-    d.addCallback(lambda res: print res)
 
-    print 'after d.addCallback()'
+    def f(x):
+        return x + 1
+    def g(x):
+        return x - 1
+
+    f = g
+    print f(33)
+    f = f
+    print f(36)
+    
+    return
+
 
 if __name__ == '__main__':
     main()
