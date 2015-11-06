@@ -19,34 +19,34 @@ class command_processor(object):
         # create an empty dictionary of events
         # will be populated by add_command()
         # each entry is a key,value pair where the
-        # key is the name of the comamand and the value is a 
+        # key is the name of the comamand and the value is a
         # list of functions to execute in response to
         # the command
         #
         # evt_loop is the (a?) reactor
         self._procs = {}
         self._reactor = reactor
-        self._task = task 
+        self._task = task
         self._queue = []
         pass
 
     def _on_event(self, args):
         print '_on_event'
         print '    ' + thread_id()
-        if len(self._queue) == 0:
+        if not self._queue:
             print '_on_event() there is nothing in the queue'
             return []
         else:
             # grab the first command off the queue, then
             # remove the first element of the queue
-            cmd,self._queue = self._queue[0],self._queue[1:]
+            cmd = self._queue[0]
+            self._queue = self._queue[1:]
             return cmd
 
     def _on_event_results(self, args):
         print '_on_event_results'
         print '   args = ' + repr(args)
-        c = args[0]
-        a = args[1]
+        c,a = args
         for proc in self._procs[c]:
             proc(a)
         return
@@ -60,13 +60,13 @@ class command_processor(object):
         return
 
     def queue_command_thread(self, cmd, args):
-        self._queue.append([cmd,args])
+        self._queue.append((cmd,args))
         d = threads.deferToThread(self._on_event, args)
         d.addCallback(self._on_event_results)
         return
 
     def queue_command(self, cmd, args):
-        self._queue.append([cmd,args])
+        self._queue.append((cmd,args))
         d = self._task.deferLater(self._reactor, 0.0, self._on_event, args)
         d.addCallback(self._on_event_results)
         return
@@ -93,7 +93,7 @@ cp = command_processor()
 def cmd1_1(args):
     print 'cmd1_1' + '(' + repr(args) + ')'
     print '    thread = ' + thread_id()
-    cp.queue_command('cmd2', {'cat': 12, 'dog': 16})
+    cp.queue_command('cmd2', {'cat': 3, 'dog': 16})
     return
 
 def cmd1_2(args):
@@ -126,6 +126,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print 'Done.'
 
 
 
